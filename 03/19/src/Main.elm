@@ -2,6 +2,7 @@ import Browser
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import List
 
 main : Program () Model Msg
 main =
@@ -17,7 +18,7 @@ main =
 
 type alias Model =
     { input : String
-    , memos : List String
+    , memos : List (Int, String)
     }
 
 init : Model
@@ -32,6 +33,7 @@ init =
 type Msg
     = Input String
     | Submit
+    | Delete Int
 
 update : Msg -> Model -> Model
 update msg model =
@@ -45,7 +47,12 @@ update msg model =
                 -- 入力文字列をリセットする
                 | input = ""
                 -- 最新のメモを追加する
-                , memos = model.input :: model.memos
+                , memos = (List.length model.memos, model.input) :: model.memos
+            }
+
+        Delete target ->
+            { model
+            | memos = List.filter (\(index, memo) -> index /= target) model.memos
             }
 
 
@@ -64,6 +71,11 @@ view model =
         , ul [] (List.map viewMemo model.memos)
         ]
 
-viewMemo : String -> Html Msg
-viewMemo memo =
-    li [] [ text memo ]
+viewMemo : (Int, String) -> Html Msg
+viewMemo (index, memo) =
+    div []
+        [ li [] [ text memo ]
+        , button
+            [ onClick (Delete index)]
+            [ text "×" ]
+        ]
